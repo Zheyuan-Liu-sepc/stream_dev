@@ -1,4 +1,4 @@
-package com.lzy.stream.realtime.v1.app.ods;
+package com.lzy.stream.realtime.v2.app.ods;
 
 import com.lzy.stream.realtime.v1.utils.FlinkSinkUtil;
 import com.lzy.stream.realtime.v1.utils.FlinkSourceUtil;

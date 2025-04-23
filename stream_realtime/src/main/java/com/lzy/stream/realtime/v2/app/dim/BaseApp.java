@@ -1,4 +1,4 @@
-package com.lzy.stream.realtime.v1.app.dim;
+package com.lzy.stream.realtime.v2.app.dim;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
