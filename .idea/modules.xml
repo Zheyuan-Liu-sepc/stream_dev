@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/realtime_common/realtime_common.iml" filepath="$PROJECT_DIR$/realtime_common/realtime_common.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/stream_dev2.iml" filepath="$PROJECT_DIR$/.idea/stream_dev2.iml" />
     </modules>
   </component>
