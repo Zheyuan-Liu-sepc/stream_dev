@@ -1,4 +1,4 @@
-package com.lzy.stream.realtime.v1.app.dws;
+package com.lzy.stream.realtime.v2.app.dws;
 
 import com.lzy.stream.realtime.v1.constant.Constant;
 import com.lzy.stream.realtime.v1.function.KeywordUDTF;
@@ -8,7 +8,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 /**
- * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.v1.app.dws.DwsTrafficSourceKeywordPageViewWindow
+ * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsTrafficSourceKeywordPageViewWindow
  * @Author zheyuan.liu
  * @Date 2025/4/18 18:53
  * @description:

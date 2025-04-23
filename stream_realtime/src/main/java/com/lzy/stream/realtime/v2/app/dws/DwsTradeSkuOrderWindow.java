@@ -1,4 +1,4 @@
-package com.lzy.stream.realtime.v1.app.dws;
+package com.lzy.stream.realtime.v2.app.dws;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -31,7 +31,7 @@ import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.v1.app.dws.DwsTradeSkuOrderWindow
+ * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsTradeSkuOrderWindow
  * @Author zheyuan.liu
  * @Date 2025/4/18 13:52
  * @description: DwsTradeSkuOrderWindow

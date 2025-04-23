@@ -1,4 +1,4 @@
-package com.lzy.stream.realtime.v1.app.dws;
+package com.lzy.stream.realtime.v2.app.dws;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -33,7 +33,7 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
 /**
- * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.v1.app.dws.DwsTrafficVcChArIsNewPageViewWindow
+ * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsTrafficVcChArIsNewPageViewWindow
  * @Author zheyuan.liu
  * @Date 2025/4/21 9:37
  * @description: DwsTrafficVcChArIsNewPageViewWindow

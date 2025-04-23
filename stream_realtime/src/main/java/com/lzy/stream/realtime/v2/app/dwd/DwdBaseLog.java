@@ -1,4 +1,4 @@
-package com.lzy.stream.realtime.v1.app.dwd;
+package com.lzy.stream.realtime.v2.app.dwd;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.v1.app.bwd.DwdBaseLog
+ * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.bwd.DwdBaseLog
  * @Author zheyuan.liu
  * @Date 2025/4/11 10:35
  * @description: DwdBaseLog

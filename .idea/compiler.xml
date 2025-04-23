@@ -6,11 +6,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="stream_realtime" />
         <module name="realtime_common" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="realtime_common" target="1.8" />
+      <module name="stream_realtime" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

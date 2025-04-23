@@ -1,4 +1,4 @@
-package com.lzy.stream.realtime.v1.app.dwd;
+package com.lzy.stream.realtime.v2.app.dwd;
 
 import com.lzy.stream.realtime.v1.constant.Constant;
 import com.lzy.stream.realtime.v1.utils.SQLUtil;
@@ -10,7 +10,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import java.time.Duration;
 
 /**
- * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.v1.app.bwd.DwdTradeOrderRefund
+ * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.bwd.DwdTradeOrderRefund
  * @Author zheyuan.liu
  * @Date 2025/4/14 11:26
  * @description: DwdTradeOrderRefund
