@@ -26,7 +26,7 @@ import redis.clients.jedis.JedisPoolConfig;
  *          expire: 1day   避免冷数据常驻内存，给内存带来压力
  *          注意：如果维度数据发生了变化，需要将缓存的数据清除掉
  */
-public class iRedisUtil {
+public class RedisUtil {
     private static JedisPool jedisPool;
     static {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
