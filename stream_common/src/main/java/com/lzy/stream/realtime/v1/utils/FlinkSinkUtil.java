@@ -18,9 +18,8 @@ import javax.annotation.Nullable;
 import java.util.Properties;
 
 /**
- * @author Felix
- * @date 2024/5/29
- * 获取相关Source的工具类
+ * @author zheyuan.liu
+ * @date 2025-04-30
  */
 public class FlinkSinkUtil {
     //获取KafkaSink

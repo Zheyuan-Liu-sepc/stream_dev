@@ -4,9 +4,8 @@ package com.lzy.stream.realtime.v1.utils;
 import com.lzy.stream.realtime.v1.constant.Constant;
 
 /**
- * @author Felix
- * @date 2024/6/04
- * FlinkSQL操作的工具类
+ * @author zheyuan.liu
+ * @date 2025-04-30
  */
 public class SQLUtil {
     //获取kafka连接器的连接属性

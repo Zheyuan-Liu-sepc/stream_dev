@@ -12,9 +12,8 @@ import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsIni
 import java.util.Properties;
 
 /**
- * @author Felix
- * @date 2024/5/28
- * 获取相关Source的工具类
+ * @author zheyuan.liu
+ * @date 2025-04-30
  */
 public class FlinkSourceUtil {
     public static KafkaSource<String> getKafkaSource(String topic, String groupId) {
