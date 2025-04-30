@@ -48,7 +48,7 @@ public class DwdBaseLog {
 
         env.enableCheckpointing(5000L, CheckpointingMode.EXACTLY_ONCE);
 
-        KafkaSource<String> kafkaSource = FlinkSourceUtil.getKafkaSource("topic_log", "dwd_log");
+        KafkaSource<String> kafkaSource = FlinkSourceUtil.getKafkaSource(Constant.TOPIC_LOG, "dwd_log");
 
         DataStreamSource<String> kafkaStrDS = env
                 .fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "Kafka_Source");

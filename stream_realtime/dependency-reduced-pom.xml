@@ -138,10 +138,6 @@
           <artifactId>kerb-simplekdc</artifactId>
           <groupId>org.apache.kerby</groupId>
         </exclusion>
-        <exclusion>
-          <artifactId>hadoop-shaded-guava</artifactId>
-          <groupId>org.apache.hadoop.thirdparty</groupId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -242,6 +238,7 @@
     </dependency>
   </dependencies>
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
   </properties>
