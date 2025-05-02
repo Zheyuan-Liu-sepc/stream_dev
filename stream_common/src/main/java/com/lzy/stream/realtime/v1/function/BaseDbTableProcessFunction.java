@@ -36,8 +36,8 @@ public class BaseDbTableProcessFunction extends BroadcastProcessFunction<JSONObj
     public void open(Configuration parameters) throws Exception {
         //将配置信息预加载到程序中
         Connection mySQLConnection = JdbcUtil.getMySQLConnection();
-        List<TableProcessDwd> tableProcessDwdList
-                = JdbcUtil.queryList(mySQLConnection, "select * from realtime_v2.table_process_dwd", TableProcessDwd.class, true);
+        List<TableProcessDwd> tableProcessDwdList = JdbcUtil
+                .queryList(mySQLConnection, "select * from realtime_v2.table_process_dwd", TableProcessDwd.class, true);
         for (TableProcessDwd tableProcessDwd : tableProcessDwdList) {
             String sourceTable = tableProcessDwd.getSourceTable();
             String sourceType = tableProcessDwd.getSourceType();
@@ -48,8 +48,7 @@ public class BaseDbTableProcessFunction extends BroadcastProcessFunction<JSONObj
     }
 
     private String getKey(String sourceTable, String sourceType) {
-        String key = sourceTable + ":" + sourceType;
-        return key;
+        return sourceTable + ":" + sourceType;
     }
 
     //处理主流业务数据

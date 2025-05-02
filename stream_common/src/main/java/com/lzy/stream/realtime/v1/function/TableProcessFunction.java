@@ -50,8 +50,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, T
 
         TableProcessDim tableProcessDim = null ;
 
-        if((tableProcessDim =  broadcastState.get(table)) != null
-                || (tableProcessDim =  configMap.get(table)) != null){
+        if((tableProcessDim =  broadcastState.get(table)) != null || (tableProcessDim =  configMap.get(table)) != null){
             JSONObject dataJsonObj = jsonObj.getJSONObject("after");
             String sinkColumns = tableProcessDim.getSinkColumns();
             deleteNotNeedColumns(dataJsonObj,sinkColumns);

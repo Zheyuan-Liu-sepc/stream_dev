@@ -140,8 +140,7 @@ public class BaseApp {
 
         BroadcastConnectedStream<JSONObject, TableProcessDim> connectDS = jsonObjDS.connect(broadcastDS);
 
-        SingleOutputStreamOperator<Tuple2<JSONObject,TableProcessDim>> dimDS = connectDS
-                .process(new TableProcessFunction(mapStateDescriptor));
+        SingleOutputStreamOperator<Tuple2<JSONObject,TableProcessDim>> dimDS = connectDS.process(new TableProcessFunction(mapStateDescriptor));
 
         dimDS.print();
 

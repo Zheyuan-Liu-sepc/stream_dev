@@ -64,6 +64,7 @@ public class DwdBaseDb {
 
         MySqlSource<String> mySqlSource = FlinkSourceUtil.getMySqlSource("realtime_v2","table_process_dwd");
         DataStreamSource<String> mysqlStrDS = env.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "mysql_source");
+
         SingleOutputStreamOperator<TableProcessDwd> tpDS = mysqlStrDS.map(
                 new MapFunction<String, TableProcessDwd>() {
                     @Override
@@ -89,11 +90,7 @@ public class DwdBaseDb {
         MapStateDescriptor<String, TableProcessDwd> mapStateDescriptor
                 = new MapStateDescriptor<>("mapStateDescriptor",String.class, TableProcessDwd.class);
         BroadcastStream<TableProcessDwd> broadcastDS = tpDS.broadcast(mapStateDescriptor);
-
-
         BroadcastConnectedStream<JSONObject, TableProcessDwd> connectDS = jsonObjDS.connect(broadcastDS);
-
-
         SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDwd>> splitDS = connectDS.process(new BaseDbTableProcessFunction(mapStateDescriptor));
 
 
