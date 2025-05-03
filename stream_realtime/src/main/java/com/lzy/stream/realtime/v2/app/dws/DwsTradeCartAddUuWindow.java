@@ -3,6 +3,7 @@ package com.lzy.stream.realtime.v2.app.dws;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lzy.stream.realtime.v1.bean.CartAddUuBean;
+import com.lzy.stream.realtime.v1.constant.Constant;
 import com.lzy.stream.realtime.v1.function.BeanToJsonStrMapFunction;
 import com.lzy.stream.realtime.v1.utils.DateFormatUtil;
 import com.lzy.stream.realtime.v1.utils.FlinkSinkUtil;
@@ -47,7 +48,7 @@ public class DwsTradeCartAddUuWindow {
 
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3,3000L));
 
-        KafkaSource<String> kafkaSource = FlinkSourceUtil.getKafkaSource("dwd_trade_cart_add", "dws_trade_cart_add_uu_window");
+        KafkaSource<String> kafkaSource = FlinkSourceUtil.getKafkaSource(Constant.TOPIC_DWD_TRADE_CART_ADD, "dws_trade_cart_add_uu_window");
 
         DataStreamSource<String> kafkaStrDS
                 = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "Kafka_Source");
