@@ -44,7 +44,6 @@ public class DwdBaseDb {
 
 //        kafkaStrDS.print();
 
-
         SingleOutputStreamOperator<JSONObject> jsonObjDS = kafkaStrDS.process(
                 new ProcessFunction<String, JSONObject>() {
                     @Override
