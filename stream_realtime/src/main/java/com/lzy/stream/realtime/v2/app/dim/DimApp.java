@@ -33,7 +33,7 @@ import org.apache.hadoop.hbase.client.Connection;
  * @description: BaseApp
  */
 
-public class BaseApp {
+public class DimApp {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
