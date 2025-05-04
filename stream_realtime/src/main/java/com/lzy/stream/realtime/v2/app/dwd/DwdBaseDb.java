@@ -91,13 +91,14 @@ public class DwdBaseDb {
                 = new MapStateDescriptor<>("mapStateDescriptor",String.class, TableProcessDwd.class);
         BroadcastStream<TableProcessDwd> broadcastDS = tpDS.broadcast(mapStateDescriptor);
         BroadcastConnectedStream<JSONObject, TableProcessDwd> connectDS = jsonObjDS.connect(broadcastDS);
-        SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDwd>> splitDS = connectDS.process(new BaseDbTableProcessFunction(mapStateDescriptor));
+        SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDwd>> splitDS = connectDS
+                .process(new BaseDbTableProcessFunction(mapStateDescriptor));
 
 
-        splitDS.print();
+//        splitDS.print();
 
 
-//        splitDS.sinkTo(FlinkSinkUtil.getKafkaSink());
+        splitDS.sinkTo(FlinkSinkUtil.getKafkaSink());
 
 
         env.execute("DwdBaseDb");
