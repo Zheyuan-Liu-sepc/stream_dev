@@ -34,7 +34,7 @@ import org.apache.flink.util.Collector;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsTrafficHomeDetailPageViewWindow
  * @Author zheyuan.liu
  * @Date 2025/4/18 15:03
- * @description: DwsTrafficHomeDetailPageViewWindow
+ * @description:  独立访客聚合统计
  */
 
 public class DwsTrafficHomeDetailPageViewWindow {

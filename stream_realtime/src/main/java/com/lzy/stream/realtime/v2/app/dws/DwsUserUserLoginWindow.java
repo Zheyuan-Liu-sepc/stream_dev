@@ -34,7 +34,7 @@ import org.apache.flink.util.Collector;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsUserUserLoginWindow
  * @Author zheyuan.liu
  * @Date 2025/4/21 9:56
- * @description: DwsUserUserLoginWindow
+ * @description: 独立用户以及回流用户聚合统计
  */
 
 public class DwsUserUserLoginWindow {

@@ -35,7 +35,7 @@ import org.apache.flink.util.Collector;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsTradeCartAddUuWindow
  * @Author zheyuan.liu
  * @Date 2025/4/21 14:31
- * @description: DwsTradeCartAddUuWindow
+ * @description: 加购独立用户统计
  */
 
 public class DwsTradeCartAddUuWindow {

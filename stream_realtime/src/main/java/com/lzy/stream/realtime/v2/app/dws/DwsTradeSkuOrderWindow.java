@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsTradeSkuOrderWindow
  * @Author zheyuan.liu
  * @Date 2025/4/18 13:52
- * @description: DwsTradeSkuOrderWindow
+ * @description: sku粒度下单业务聚合统计
  */
 
 public class DwsTradeSkuOrderWindow {

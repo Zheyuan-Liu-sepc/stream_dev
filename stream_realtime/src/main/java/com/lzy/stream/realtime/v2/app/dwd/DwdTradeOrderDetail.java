@@ -13,7 +13,7 @@ import java.time.Duration;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.bwd.DwdTradeOrderDetail
  * @Author zheyuan.liu
  * @Date 2025/4/13 19:41
- * @description: DwdTradeOrderDetail
+ * @description: 下单事实表
  */
 
 public class DwdTradeOrderDetail {

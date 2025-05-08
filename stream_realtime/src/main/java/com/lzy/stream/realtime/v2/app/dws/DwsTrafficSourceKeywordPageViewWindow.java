@@ -11,7 +11,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsTrafficSourceKeywordPageViewWindow
  * @Author zheyuan.liu
  * @Date 2025/4/18 18:53
- * @description:
+ * @description: 搜索关键词聚合统计
  */
 
 public class DwsTrafficSourceKeywordPageViewWindow {

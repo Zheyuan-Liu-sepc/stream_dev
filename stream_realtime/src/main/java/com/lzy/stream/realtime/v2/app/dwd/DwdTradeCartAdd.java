@@ -11,7 +11,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.bwd.DwdTradeCartAdd
  * @Author zheyuan.liu
  * @Date 2025/4/11 20:49
- * @description: DwdTradeCartAdd
+ * @description: 加购事实表
  */
 
 public class DwdTradeCartAdd {

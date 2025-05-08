@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.dws.DwsTradeProvinceOrderWindow
  * @Author zheyuan.liu
  * @Date 2025/4/21 14:56
- * @description: DwsTradeProvinceOrderWindow
+ * @description: 省份粒度下单聚合统计
  */
 
 public class DwsTradeProvinceOrderWindow {

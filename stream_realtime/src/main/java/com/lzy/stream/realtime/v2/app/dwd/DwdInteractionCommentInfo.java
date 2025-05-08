@@ -11,7 +11,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
  * @Package com.lzy.stream.realtime.com.lzy.stream.realtime.com.lzy.stream.realtime.v2.app.bwd.DwdInteractionCommentInfo
  * @Author zheyuan.liu
  * @Date 2025/4/11 15:50
- * @description: DwdInteractionCommentInfo
+ * @description: 评论事实表
  */
 
 public class DwdInteractionCommentInfo {
