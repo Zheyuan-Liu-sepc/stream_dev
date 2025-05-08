@@ -1,5 +1,7 @@
 package com.lzy.stream.realtime.v1.utils;
 
+import static com.lzy.stream.realtime.v1.utils.SiliconFlowApi.generateBadReview;
+
 /**
  * @Package com.lzy.stream.realtime.v1.utils.CommonGenerateTempLate
  * @Author zheyuan.liu

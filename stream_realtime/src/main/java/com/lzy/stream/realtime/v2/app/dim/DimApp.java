@@ -47,6 +47,7 @@ public class DimApp {
 
 //        kafkaStrDS.print();
 
+        //通过数据库和操作类型还有数据进行过滤保留符合条件的数据
         SingleOutputStreamOperator<JSONObject> jsonObjDS = kafkaStrDS.process(
                 new ProcessFunction<String, JSONObject>() {
                     @Override
@@ -73,12 +74,11 @@ public class DimApp {
 
 //        jsonObjDS.print();
 
+        //读取dim的表的基本结构，进行一个封装TableProcessDim传到下游
         MySqlSource<String> mySqlSource = FlinkSourceUtil.getMySqlSource("realtime_v2", "table_process_dim");
-
         DataStreamSource<String> mysqlStrDS = env
                 .fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "mysql_source")
                 .setParallelism(1);
-
         SingleOutputStreamOperator<TableProcessDim> tpDS = mysqlStrDS.map(
                 new MapFunction<String, TableProcessDim>() {
                     @Override
@@ -99,6 +99,7 @@ public class DimApp {
 
 //        tpDS.print();
 
+        //hbase建表
         tpDS.map(
                 new RichMapFunction<TableProcessDim, TableProcessDim>() {
 
@@ -134,16 +135,17 @@ public class DimApp {
 
 //        tpDS.print();
 
+        //通过表找到数据进行封装TableProcessFunction，发送到下游
+        //3> ({"birthday":10354,"op":"r","login_name":"5vifw38y83","gender":"M","create_time":1654646400000,"name":"马亮政","user_level":"3","id":1},
+        // TableProcessDim(sourceTable=user_info, sinkTable=dim_user_info, sinkColumns=id,login_name,name,user_level,birthday,gender,create_time,operate_time, sinkFamily=info, sinkRowKey=id, op=null))
         MapStateDescriptor<String, TableProcessDim> mapStateDescriptor =
                 new MapStateDescriptor<>("mapStateDescriptor",String.class, TableProcessDim.class);
         BroadcastStream<TableProcessDim> broadcastDS = tpDS.broadcast(mapStateDescriptor);
-
         BroadcastConnectedStream<JSONObject, TableProcessDim> connectDS = jsonObjDS.connect(broadcastDS);
-
         SingleOutputStreamOperator<Tuple2<JSONObject,TableProcessDim>> dimDS = connectDS
                 .process(new TableProcessFunction(mapStateDescriptor));
 
-//        dimDS.print();
+        dimDS.print();
 
         dimDS.addSink(new HBaseSinkFunction());
 

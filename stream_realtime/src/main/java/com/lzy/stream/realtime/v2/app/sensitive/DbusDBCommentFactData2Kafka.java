@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @description: 敏感词
  */
 
-public class DbusBanBlackListUserInfo2Kafka {
+public class DbusDBCommentFactData2Kafka {
 
 
     private static final ArrayList<String> sensitiveWordsLists;
