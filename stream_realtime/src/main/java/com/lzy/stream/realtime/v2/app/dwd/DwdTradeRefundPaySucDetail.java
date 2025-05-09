@@ -119,7 +119,6 @@ public class DwdTradeRefundPaySucDetail {
                 " order_id string," +
                 " sku_id string," +
                 " province_id string," +
-
                 " payment_type_code string," +
                 " date_id string," +
                 " callback_time string," +

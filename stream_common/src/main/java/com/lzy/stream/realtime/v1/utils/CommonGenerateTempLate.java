@@ -15,7 +15,7 @@ public class CommonGenerateTempLate {
 
     private static final String COMMENT = "差评";
 
-    private static final String API_TOKEN = "sk-pfaasdbkktgnunlvoapothvybwflwdteckwmhakzqbthcgnj";
+    private static final String API_TOKEN = "sk-mbkquofajmeyzfowolnioseunulvulauadlgcvoetcvayiye";
 
     public static String GenerateComment(String comment,String productName){
         if (comment.equals(COMMENT)){
