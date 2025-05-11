@@ -68,6 +68,7 @@ public class DwsTradeProvinceOrderWindow {
                 }
         );
 
+
         KeyedStream<JSONObject, String> orderDetailIdKeyedDS = jsonObjDS.keyBy(jsonObj -> jsonObj.getString("id"));
 
         SingleOutputStreamOperator<JSONObject> distinctDS = orderDetailIdKeyedDS.process(
