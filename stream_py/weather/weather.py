@@ -91,7 +91,7 @@ class SpiderCHNAmapWeatherData:
         failed_cities = []
 
         insert_sql = """
-            INSERT INTO realtime_v2.spider_amap_weather_data_dtl 
+            INSERT INTO realtime_dmp.spider_amap_weather_data_dtl 
             (code, province, city, area, info, lives, report_time)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
