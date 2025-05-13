@@ -14,7 +14,7 @@ def insert_data():
     cursor = connection.cursor()
 
     try:
-        with open('national-code.txt', 'r', encoding='utf-8') as file:
+        with open('../../stream_py/weather/national-code.txt', 'r', encoding='utf-8') as file:
             for line in file:
                 data = line.strip().split(',')
                 code = data[0]

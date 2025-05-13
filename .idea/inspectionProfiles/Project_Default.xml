@@ -38,5 +38,19 @@
       <option name="IGNORE_POINT_TO_ITSELF" value="false" />
       <option name="myAdditionalJavadocTags" value="Package,Author,Date,description:,date" />
     </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="pymysql" />
+          <option value="requests" />
+          <option value="weather.weather.retrying" />
+          <option value="weather.city_weather.*" />
+          <option value="json" />
+          <option value="random" />
+          <option value="logging" />
+          <option value="weather.weather.*" />
+        </list>
+      </option>
+    </inspection_tool>
   </profile>
 </component>
