@@ -26,7 +26,7 @@ import java.time.format.DateTimeFormatter;
  * @description:
  */
 
-public class DwdApp {
+public class DwdDbApp {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -35,20 +35,6 @@ public class DwdApp {
         KafkaSource<String> kafkaSourceBd = FlinkSourceUtil.getKafkaSource("topic_dmp_db", "dwd_app");
 
         DataStreamSource<String> kafka_source = env.fromSource(kafkaSourceBd, WatermarkStrategy.noWatermarks(), "Kafka Source");
-
-        KafkaSource<String> kafkaSourceLog = FlinkSourceUtil.getKafkaSource("topic_log", "dwd_app");
-
-        SingleOutputStreamOperator<String> kafka_source_log = env.fromSource(kafkaSourceLog, WatermarkStrategy.noWatermarks(), "Kafka Source");
-
-        SingleOutputStreamOperator<JSONObject> streamOperatorlog = kafka_source_log.map(JSON::parseObject)
-                .assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(5))
-                        .withTimestampAssigner(new SerializableTimestampAssigner<JSONObject>() {
-                    @Override
-                    public long extractTimestamp(JSONObject element, long recordTimestamp) {
-                        return element.getLong("ts");
-                    }
-                }));
-
 
 
         SingleOutputStreamOperator<JSONObject> operator = kafka_source.map(JSON::parseObject)
@@ -59,37 +45,6 @@ public class DwdApp {
                         return element.getLong("ts_ms");
                     }
                 }));
-
-        SingleOutputStreamOperator<JSONObject> logDeviceInfoDs = streamOperatorlog.map(new MapFunction<JSONObject, JSONObject>() {
-            @Override
-            public JSONObject map(JSONObject jsonObject) throws Exception {
-                JSONObject result = new JSONObject();
-                if (jsonObject.containsKey("common")) {
-                    JSONObject common = jsonObject.getJSONObject("common");
-                    result.put("uid", common.getString("uid") != null ? common.getString("uid") : "-1");
-                    result.put("ts", jsonObject.getLongValue("ts"));
-                    JSONObject deviceInfo = new JSONObject();
-                    common.remove("sid");
-                    common.remove("mid");
-                    common.remove("is_new");
-                    deviceInfo.putAll(common);
-                    result.put("deviceInfo", deviceInfo);
-                    if (jsonObject.containsKey("page") && !jsonObject.getJSONObject("page").isEmpty()) {
-                        JSONObject pageInfo = jsonObject.getJSONObject("page");
-                        if (pageInfo.containsKey("item_type") && pageInfo.getString("item_type").equals("keyword")) {
-                            String item = pageInfo.getString("item");
-                            result.put("search_item", item);
-                        }
-                    }
-                }
-                JSONObject deviceInfo = result.getJSONObject("deviceInfo");
-                String os = deviceInfo.getString("os").split(" ")[0];
-                deviceInfo.put("os", os);
-
-                return result;
-            }
-        });
-
 
 //        kafka_source.print();
 
@@ -163,7 +118,7 @@ public class DwdApp {
         KeyedStream<JSONObject, String> keyedStreamUserInfoSupDs = UserinfoSupDs.keyBy(data -> data.getString("uid"));
 //
 //        keyedStreamUserInfoDs.print();
-////        keyedStreamUserInfoSupDs.print();
+//       keyedStreamUserInfoSupDs.print();
 
         SingleOutputStreamOperator<JSONObject> processIntervalJoinUserInfo6BaseMessageDs = keyedStreamUserInfoSupDs.intervalJoin(keyedStreamUserInfoDs)
                 .between(Time.minutes(-60), Time.minutes(60))
