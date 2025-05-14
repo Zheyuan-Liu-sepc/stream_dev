@@ -2,6 +2,10 @@ package com.lzy.app.dwd;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.lzy.stream.realtime.v1.bean.DimBaseCategory;
+import com.lzy.stream.realtime.v1.bean.DimCategoryCompare;
+import com.lzy.stream.realtime.v1.utils.ConfigUtils;
+import com.lzy.stream.realtime.v1.utils.FlinkSinkUtil;
 import com.lzy.stream.realtime.v1.utils.FlinkSourceUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -25,10 +29,11 @@ import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Connection;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @Package com.lzy.app.dwd.DwdLogApp
@@ -124,7 +129,7 @@ public class DwdLogApp {
         });
 //        logDeviceInfoDs.print();
 
-        SingleOutputStreamOperator<JSONObject> uid = processStagePageLogDs.keyBy(value -> value.getString("uid"))
+        SingleOutputStreamOperator<JSONObject> win2MinutesPageLogsDs = processStagePageLogDs.keyBy(value -> value.getString("uid"))
                 .process(new KeyedProcessFunction<String, JSONObject, JSONObject>() {
 
                     ValueState<Long> pvState;
@@ -190,10 +195,15 @@ public class DwdLogApp {
                     }
                 });
 
-        uid.keyBy(data -> data.getString("uid"))
+        SingleOutputStreamOperator<JSONObject> reduce = win2MinutesPageLogsDs.keyBy(data -> data.getString("uid"))
                 .window(TumblingProcessingTimeWindows.of(Time.minutes(2)))
-                .reduce((value1, value2) -> value2)
-                .print();
+                .reduce((value1, value2) -> value2);
+
+        SingleOutputStreamOperator<String> operator = reduce.map(data -> data.toString());
+
+        operator.print();
+
+//        operator.sinkTo(FlinkSinkUtil.getKafkaSink("minutes_page_Log"));
 
         env.execute("DwdLogApp");
     }
