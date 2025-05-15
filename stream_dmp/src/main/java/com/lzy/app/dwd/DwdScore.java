@@ -1,7 +1,6 @@
 package com.lzy.app.dwd;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.lzy.stream.realtime.v1.bean.DimBaseCategory;
 import com.lzy.stream.realtime.v1.bean.DimCategoryCompare;
@@ -28,7 +27,7 @@ import java.util.Map;
  * @description:
  */
 
-public class DwdScoreApp {
+public class DwdScore {
 
 
 
