@@ -61,15 +61,15 @@ public class DwdScore {
                 // 获取数据库连接
                 connection = JdbcUtil.getMySQLConnection();
 
-                String sql1 = "select b3.id,                          \n" +
-                        "            b3.name as b3name,              \n" +
-                        "            b2.name as b2name,              \n" +
-                        "            b1.name as b1name               \n" +
-                        "     from realtime_dmp.base_category3 as b3  \n" +
-                        "     join realtime_dmp.base_category2 as b2  \n" +
-                        "     on b3.category2_id = b2.id             \n" +
-                        "     join realtime_dmp.base_category1 as b1  \n" +
-                        "     on b2.category1_id = b1.id";
+                String sql1 = "select b3.id,                           \n" +
+                        "            b3.name as b3name,                \n" +
+                        "            b2.name as b2name,                \n" +
+                        "            b1.name as b1name                 \n" +
+                        "      from realtime_dmp.base_category3 as b3  \n" +
+                        "      join realtime_dmp.base_category2 as b2  \n" +
+                        "      on b3.category2_id = b2.id              \n" +
+                        "      join realtime_dmp.base_category1 as b1  \n" +
+                        "      on b2.category1_id = b1.id                ";
                 dim_base_categories = JdbcUtil.queryList(connection, sql1, DimBaseCategory.class, false);
 
                 String sql2 = "select id, category_name, search_category from realtime_dmp.category_compare_dic;";
@@ -77,7 +77,8 @@ public class DwdScore {
 
                 // 在 open 方法中初始化 categoryMap
                 for (DimBaseCategory category : dim_base_categories) {
-                    categoryMap.put(category.getB3name(), category);
+                    categoryMap.put(category.getName3(), category);
+                    System.err.println(category);
                 }
 
                 super.open(parameters);
@@ -111,7 +112,7 @@ public class DwdScore {
                 if (searchItem != null && !searchItem.isEmpty()) {
                     DimBaseCategory category = categoryMap.get(searchItem);
                     if (category != null) {
-                        jsonObject.put("b1_category", category.getB1name());
+                        jsonObject.put("b1_category", category.getName1());
                     }
                 }
                 // search
