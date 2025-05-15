@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lzy.stream.realtime.v1.bean.DimBaseCategory;
 import com.lzy.stream.realtime.v1.bean.DimCategoryCompare;
+import com.lzy.stream.realtime.v1.utils.FlinkSinkUtil;
 import com.lzy.stream.realtime.v1.utils.FlinkSourceUtil;
 import com.lzy.stream.realtime.v1.utils.JdbcUtil;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -61,15 +62,13 @@ public class DwdScore {
                 // 获取数据库连接
                 connection = JdbcUtil.getMySQLConnection();
 
-                String sql1 = "select b3.id,                           \n" +
-                        "            b3.name as b3name,                \n" +
-                        "            b2.name as b2name,                \n" +
-                        "            b1.name as b1name                 \n" +
-                        "      from realtime_dmp.base_category3 as b3  \n" +
-                        "      join realtime_dmp.base_category2 as b2  \n" +
-                        "      on b3.category2_id = b2.id              \n" +
-                        "      join realtime_dmp.base_category1 as b1  \n" +
-                        "      on b2.category1_id = b1.id                ";
+                String sql1 = "  SELECT                                                        \n" +
+                        "   b3.id, b3.name3 b3name, b2.name2 b2name, b1.name1 b1name     \n" +
+                        "   FROM realtime_dmp.base_category3 as b3                             \n" +
+                        "   JOIN realtime_dmp.base_category2 as b2                             \n" +
+                        "   ON b3.category2_id = b2.id                                         \n" +
+                        "   JOIN realtime_dmp.base_category1 as b1                             \n" +
+                        "   ON b2.category1_id = b1.id                                         ";
                 dim_base_categories = JdbcUtil.queryList(connection, sql1, DimBaseCategory.class, false);
 
                 String sql2 = "select id, category_name, search_category from realtime_dmp.category_compare_dic;";
@@ -205,6 +204,8 @@ public class DwdScore {
         });
 
         operator.print();
+
+        operator.map(data -> data.toString()).sinkTo(FlinkSinkUtil.getKafkaSink("DwdScore"));
 
 
         env.execute("minutes_page_Log");

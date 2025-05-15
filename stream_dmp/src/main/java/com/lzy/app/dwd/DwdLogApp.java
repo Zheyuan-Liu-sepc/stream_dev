@@ -177,6 +177,7 @@ public class DwdLogApp {
                         output.put("ch", String.join(",", getField("ch")));
                         output.put("md", String.join(",", getField("md")));
                         output.put("ba", String.join(",", getField("ba")));
+                        output.put("ts", value.getString("ts"));
                         output.put("search_item", String.join(",", getField("search_item")));
 
                         out.collect(output);
@@ -203,7 +204,7 @@ public class DwdLogApp {
 
         operator.print();
 
-//        operator.sinkTo(FlinkSinkUtil.getKafkaSink("minutes_page_Log"));
+        operator.sinkTo(FlinkSinkUtil.getKafkaSink("minutes_page_Log"));
 
         env.execute("DwdLogApp");
     }

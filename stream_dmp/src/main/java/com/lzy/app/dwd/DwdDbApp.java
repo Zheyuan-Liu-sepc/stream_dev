@@ -2,6 +2,7 @@ package com.lzy.app.dwd;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.lzy.stream.realtime.v1.utils.FlinkSinkUtil;
 import com.lzy.stream.realtime.v1.utils.FlinkSourceUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -153,7 +154,7 @@ public class DwdDbApp {
                     }
                 });
 
-        processIntervalJoinUserInfo6BaseMessageDs.print();
+        processIntervalJoinUserInfo6BaseMessageDs.map(data -> data.toString()).sinkTo(FlinkSinkUtil.getKafkaSink("DwdDbApp"));
 
 
         env.execute("DwdApp");

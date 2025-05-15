@@ -55,6 +55,8 @@ public class DwdOrderInfo {
 
         SingleOutputStreamOperator<JSONObject> detailDs = streamOperator.filter(data -> data.getJSONObject("source").getString("table").equals("order_detail"));
 
+        SingleOutputStreamOperator<JSONObject> skuDs = streamOperator.filter(sku -> sku.getJSONObject("source").getString("table").equals("sku_info"));
+
         SingleOutputStreamOperator<JSONObject> operator = orderDs.process(new ProcessFunction<JSONObject, JSONObject>() {
             @Override
             public void processElement(JSONObject value, ProcessFunction<JSONObject, JSONObject>.Context ctx, Collector<JSONObject> out) throws Exception {
@@ -99,9 +101,24 @@ public class DwdOrderInfo {
             }
         });
 
-        KeyedStream<JSONObject, String> idBy = operator.keyBy(data -> data.getString("id"));
+        SingleOutputStreamOperator<JSONObject> opesku = skuDs.process(new ProcessFunction<JSONObject, JSONObject>() {
+            @Override
+            public void processElement(JSONObject value, ProcessFunction<JSONObject, JSONObject>.Context ctx, Collector<JSONObject> out) throws Exception {
+                JSONObject rebuce = new JSONObject();
+                JSONObject after = value.getJSONObject("after");
+                rebuce.put("id", after.getString("id"));
+                rebuce.put("category3_id", after.getString("category3_id"));
+                rebuce.put("spu_id", after.getString("spu_id"));
+                rebuce.put("weight", after.getString("weight"));
+                out.collect(rebuce);
+            }
+        });
 
-        KeyedStream<JSONObject, String> oidBy = detail.keyBy(data -> data.getString("order_id"));
+        KeyedStream<JSONObject, Boolean> idBy = operator.keyBy(data -> data.getString("id").isEmpty());
+
+        KeyedStream<JSONObject, Boolean> oidBy = detail.keyBy(data -> data.getString("order_id").isEmpty());
+
+        KeyedStream<JSONObject, Boolean> skuBy = opesku.keyBy(data -> data.getString("id").isEmpty());
 
         SingleOutputStreamOperator<JSONObject> outputStreamOperator = idBy.intervalJoin(oidBy)
                 .between(Time.minutes(-5), Time.minutes(5))
@@ -126,8 +143,26 @@ public class DwdOrderInfo {
                     }
                 });
 
+        KeyedStream<JSONObject, Boolean> keyBy = outputStreamOperator.keyBy(data -> data.getString("sku_id").isEmpty());
 
-        SingleOutputStreamOperator<JSONObject> operator1 = outputStreamOperator.keyBy(data -> data.getString("detail_id"))
+        SingleOutputStreamOperator<JSONObject> sku = keyBy.intervalJoin(skuBy)
+                .between(Time.minutes(-5), Time.minutes(5))
+                .process(new ProcessJoinFunction<JSONObject, JSONObject, JSONObject>() {
+                    @Override
+                    public void processElement(JSONObject left, JSONObject right, ProcessJoinFunction<JSONObject, JSONObject, JSONObject>.Context ctx, Collector<JSONObject> out) throws Exception {
+                        JSONObject merged = new JSONObject();
+                        merged.putAll(left);
+                        merged.put("category3_id", right.getString("category3_id"));
+                        merged.put("spu_id", right.getString("spu_id"));
+                        merged.put("weight", right.getString("weight"));
+                        out.collect(merged);
+                    }
+                });
+
+//        sku.print("sku");
+
+
+        SingleOutputStreamOperator<JSONObject> operator1 = sku.keyBy(data -> data.getString("detail_id"))
                 .process(new KeyedProcessFunction<String, JSONObject, JSONObject>() {
                     private ValueState<Long> latestTsState;
 
