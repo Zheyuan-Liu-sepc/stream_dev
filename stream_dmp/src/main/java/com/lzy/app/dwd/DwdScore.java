@@ -29,20 +29,23 @@ import java.util.Map;
  */
 
 public class DwdScore {
-
-
-
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         env.setParallelism(1);
 
+        // 获取 kafka 数据源
         KafkaSource<String> kafkaSourceLog = FlinkSourceUtil.getKafkaSource("minutes_page_Log", "page_Log");
 
         SingleOutputStreamOperator<String> kafka_source_log = env.fromSource(kafkaSourceLog, WatermarkStrategy.noWatermarks(), "Kafka Source");
 
         SingleOutputStreamOperator<JSONObject> streamOperatorlog = kafka_source_log.map(JSON::parseObject);
 
+        // 使用 RichMapFunction 对每条日志进行处理，包括：
+        //解析操作系统类型（iOS/Android），并根据类型设置设备使用率；
+        //查询数据库构建分类映射关系；
+        //根据搜索关键词匹配商品一级分类；
+        //根据一级分类设置不同年龄段的搜索偏好分数；
         SingleOutputStreamOperator<JSONObject> operator = streamOperatorlog.map(new RichMapFunction<JSONObject, JSONObject>() {
 
             private List<DimBaseCategory> dim_base_categories;
@@ -52,7 +55,6 @@ public class DwdScore {
 
             final double deviceRate = 0.1;
             final double searchRate = 0.15;
-            final double timeRate = 0.1;
 
             @Override
             public void open(Configuration parameters) throws Exception {
@@ -78,6 +80,10 @@ public class DwdScore {
                 for (DimBaseCategory category : dim_base_categories) {
                     categoryMap.put(category.getName3(), category);
                     System.err.println(category);
+                }
+
+                for (DimCategoryCompare dimCategoryCompare : dimCategoryCompares) {
+                    System.err.println(dimCategoryCompare);
                 }
 
                 super.open(parameters);
@@ -118,8 +124,8 @@ public class DwdScore {
                 String b1Category = jsonObject.getString("b1_category");
                 if (b1Category != null && !b1Category.isEmpty()) {
                     for (DimCategoryCompare dimCategoryCompare : dimCategoryCompares) {
-                        if (b1Category.equals(dimCategoryCompare.getCategoryName())) {
-                            jsonObject.put("searchCategory", dimCategoryCompare.getSearchCategory());
+                        if (b1Category.equals(dimCategoryCompare.getCategory_name())) {
+                            jsonObject.put("searchCategory", dimCategoryCompare.getSearch_category());
                             break;
                         }
                     }
@@ -205,7 +211,7 @@ public class DwdScore {
 
         operator.print();
 
-        operator.map(data -> data.toString()).sinkTo(FlinkSinkUtil.getKafkaSink("DwdScore"));
+//        operator.map(data -> data.toString()).sinkTo(FlinkSinkUtil.getKafkaSink("DwdScore"));
 
 
         env.execute("minutes_page_Log");

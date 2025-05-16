@@ -34,14 +34,18 @@ import java.time.format.DateTimeFormatter;
 
 public class DwdOrderInfo {
     public static void main(String[] args) throws Exception {
+        //  创建执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         env.setParallelism(1);
 
+        //读取 Kafka 数据：
+        //使用 FlinkSourceUtil.getKafkaSource() 从 Kafka 主题 topic_dmp_db 消费数据。
         KafkaSource<String> kafkaSourceBd = FlinkSourceUtil.getKafkaSource("topic_dmp_db", "dwd_app");
 
         DataStreamSource<String> kafka_source = env.fromSource(kafkaSourceBd, WatermarkStrategy.noWatermarks(), "Kafka Source");
 
+        //将 JSON 字符串解析为 JSONObject 并提取事件时间戳（ts_ms）生成水印。
         SingleOutputStreamOperator<JSONObject> streamOperator = kafka_source.map(JSON::parseObject).assignTimestampsAndWatermarks(WatermarkStrategy
                 .<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(5))
                 .withTimestampAssigner(new SerializableTimestampAssigner<JSONObject>() {
@@ -51,12 +55,14 @@ public class DwdOrderInfo {
                     }
                 }));
 
+        //按表名过滤出三张表的数据流：
         SingleOutputStreamOperator<JSONObject> orderDs = streamOperator.filter(data -> data.getJSONObject("source").getString("table").equals("order_info"));
 
         SingleOutputStreamOperator<JSONObject> detailDs = streamOperator.filter(data -> data.getJSONObject("source").getString("table").equals("order_detail"));
 
         SingleOutputStreamOperator<JSONObject> skuDs = streamOperator.filter(sku -> sku.getJSONObject("source").getString("table").equals("sku_info"));
 
+        // 对三张表的数据进行过滤，只保留 order_info 表中的数据，并提取 necessary_fields 字段。
         SingleOutputStreamOperator<JSONObject> operator = orderDs.process(new ProcessFunction<JSONObject, JSONObject>() {
             @Override
             public void processElement(JSONObject value, ProcessFunction<JSONObject, JSONObject>.Context ctx, Collector<JSONObject> out) throws Exception {
@@ -114,12 +120,14 @@ public class DwdOrderInfo {
             }
         });
 
+        // 使用 keyBy() 方法对三张表的数据进行分组，并使用 intervalJoin() 方法进行关联。
         KeyedStream<JSONObject, Boolean> idBy = operator.keyBy(data -> data.getString("id").isEmpty());
 
         KeyedStream<JSONObject, Boolean> oidBy = detail.keyBy(data -> data.getString("order_id").isEmpty());
 
         KeyedStream<JSONObject, Boolean> skuBy = opesku.keyBy(data -> data.getString("id").isEmpty());
 
+        //  使用 intervalJoin() 方法进行关联，并设置时间间隔为5分钟。
         SingleOutputStreamOperator<JSONObject> outputStreamOperator = idBy.intervalJoin(oidBy)
                 .between(Time.minutes(-5), Time.minutes(5))
                 .process(new ProcessJoinFunction<JSONObject, JSONObject, JSONObject>() {
@@ -161,7 +169,9 @@ public class DwdOrderInfo {
 
 //        sku.print("sku");
 
-
+        // 使用 keyBy() 方法对三张表的数据进行分组，并使用 intervalJoin() 方法进行关联。
+        //基于 detail_id 做 KeyedProcess 去重：
+        //使用 ValueState<Long> 缓存最新 ts_ms 时间戳，实现基于状态的去重逻辑（保留最近一小时状态）。
         SingleOutputStreamOperator<JSONObject> operator1 = sku.keyBy(data -> data.getString("detail_id"))
                 .process(new KeyedProcessFunction<String, JSONObject, JSONObject>() {
                     private ValueState<Long> latestTsState;

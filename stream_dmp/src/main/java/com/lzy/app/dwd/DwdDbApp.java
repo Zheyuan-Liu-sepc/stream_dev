@@ -33,11 +33,12 @@ public class DwdDbApp {
 
         env.setParallelism(1);
 
+        //读取 Kafka 数据：消费 topic_dmp_db 主题的消息。
         KafkaSource<String> kafkaSourceBd = FlinkSourceUtil.getKafkaSource("topic_dmp_db", "dwd_app");
 
         DataStreamSource<String> kafka_source = env.fromSource(kafkaSourceBd, WatermarkStrategy.noWatermarks(), "Kafka Source");
 
-
+        //解析 JSON 并提取时间戳：使用 ts_ms 字段作为事件时间。
         SingleOutputStreamOperator<JSONObject> operator = kafka_source.map(JSON::parseObject)
                 .assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(5))
                         .withTimestampAssigner(new SerializableTimestampAssigner<JSONObject>() {
@@ -49,12 +50,14 @@ public class DwdDbApp {
 
 //        kafka_source.print();
 
+        // 过滤出 user_info 和 user_info_sup_msg 两张表的数据
         SingleOutputStreamOperator<JSONObject> UserInfoDS = operator
                 .filter(json -> json.getJSONObject("source").getString("table").equals("user_info"));
 
         SingleOutputStreamOperator<JSONObject> UserInfoSupDS = operator
                 .filter(json -> json.getJSONObject("source").getString("table").equals("user_info_sup_msg"));
 
+        // 处理 user_info_sup_msg 表的数据
         SingleOutputStreamOperator<JSONObject> streamOperator = UserInfoSupDS.process(new ProcessFunction<JSONObject, JSONObject>() {
             @Override
             public void processElement(JSONObject value, ProcessFunction<JSONObject, JSONObject>.Context ctx, Collector<JSONObject> out) throws Exception {
@@ -74,6 +77,7 @@ public class DwdDbApp {
 
 //        streamOperator.print();
 
+        //  处理 user_info 表的数据
         SingleOutputStreamOperator<JSONObject> outputStreamOperator = UserInfoDS.process(new ProcessFunction<JSONObject, JSONObject>() {
             @Override
             public void processElement(JSONObject value, ProcessFunction<JSONObject, JSONObject>.Context ctx, Collector<JSONObject> out) throws Exception {
@@ -112,6 +116,7 @@ public class DwdDbApp {
 
 //        outputStreamOperator.print();
 
+        //  join
         SingleOutputStreamOperator<JSONObject> UserinfoDs = streamOperator.filter(data -> data.containsKey("uid") && !data.getString("uid").isEmpty());
         SingleOutputStreamOperator<JSONObject> UserinfoSupDs = outputStreamOperator.filter(data -> data.containsKey("uid") && !data.getString("uid").isEmpty());
 
@@ -121,6 +126,7 @@ public class DwdDbApp {
 //        keyedStreamUserInfoDs.print();
 //       keyedStreamUserInfoSupDs.print();
 
+        // 处理 user_info_sup_msg 表的数据 按 uid 分组并做时间区间 Join：在 ±60 分钟窗口内匹配主信息与补充信息。
         SingleOutputStreamOperator<JSONObject> processIntervalJoinUserInfo6BaseMessageDs = keyedStreamUserInfoSupDs.intervalJoin(keyedStreamUserInfoDs)
                 .between(Time.minutes(-60), Time.minutes(60))
                 .process(new ProcessJoinFunction<JSONObject, JSONObject, JSONObject>() {
@@ -154,7 +160,9 @@ public class DwdDbApp {
                     }
                 });
 
-        processIntervalJoinUserInfo6BaseMessageDs.map(data -> data.toString()).sinkTo(FlinkSinkUtil.getKafkaSink("DwdDbApp"));
+        processIntervalJoinUserInfo6BaseMessageDs.print();
+
+//        processIntervalJoinUserInfo6BaseMessageDs.map(data -> data.toString()).sinkTo(FlinkSinkUtil.getKafkaSink("DwdDbApp"));
 
 
         env.execute("DwdApp");

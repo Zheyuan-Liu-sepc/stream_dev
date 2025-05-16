@@ -3,17 +3,23 @@ package com.lzy.app.dwd;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lzy.stream.realtime.v1.function.ProcessJoinBase2And4BaseFunc;
-import com.lzy.stream.realtime.v1.function.ProcessLabelFunc;
+import com.lzy.stream.realtime.v1.utils.FlinkSinkUtil;
 import com.lzy.stream.realtime.v1.utils.FlinkSourceUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.connector.file.sink.writer.FileWriter;
+import org.apache.flink.api.common.state.ListState;
+import org.apache.flink.api.common.state.ListStateDescriptor;
+import org.apache.flink.api.common.typeinfo.TypeHint;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.util.Collector;
 
 import java.io.*;
 import java.time.Duration;
@@ -96,8 +102,12 @@ public class DwdMerge {
                 .between(Time.hours(-80), Time.hours(80))
                 .process(new ProcessLabelFunc());
 
-        SingleOutputStreamOperator<String> map = userLabelProcessDs.map(data -> data.toJSONString());
 
+        SingleOutputStreamOperator<String> map = userLabelProcessDs.map(data -> data.toString());
+
+        map.print();
+
+        map.sinkTo(FlinkSinkUtil.getKafkaSink("Merge"));
 
         String outputPath = "D:\\学习\\output.csv";
 
@@ -118,6 +128,42 @@ public class DwdMerge {
                     new OutputStreamWriter(new FileOutputStream(filePath, true), "UTF-8"))) {
                 writer.write(value);
                 writer.newLine();
+            }
+        }
+    }
+
+    public static class ProcessLabelFunc extends ProcessJoinFunction<JSONObject, JSONObject, JSONObject> {
+        private transient ListState<JSONObject> processedObjectsState;
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            ListStateDescriptor<JSONObject> descriptor = new ListStateDescriptor<>(
+                    "processedObjects",
+                    TypeInformation.of(new TypeHint<JSONObject>() {})
+            );
+            processedObjectsState = getRuntimeContext().getListState(descriptor);
+        }
+
+        @Override
+        public void processElement(JSONObject left, JSONObject right, Context ctx, Collector<JSONObject> out) throws Exception {
+            // 合并左右流的数据
+            JSONObject mergedObject = new JSONObject();
+            mergedObject.putAll(left);
+            mergedObject.putAll(right);
+
+            // 检查是否已存在（此处简化为比较JSON字符串，实际可能需要更复杂的比较逻辑）
+            boolean exists = false;
+            for (JSONObject obj : processedObjectsState.get()) {
+                if (obj.toString().equals(mergedObject.toString())) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                // 添加到状态并输出
+                processedObjectsState.add(mergedObject);
+                out.collect(mergedObject);
             }
         }
     }

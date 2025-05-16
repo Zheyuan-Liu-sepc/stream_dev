@@ -3,9 +3,7 @@ package com.lzy.app.dwd;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lzy.stream.realtime.v1.bean.DimBaseCategory;
-import com.lzy.stream.realtime.v1.bean.DimCategoryCompare;
 import com.lzy.stream.realtime.v1.bean.DimSkuInfoMsg;
-import com.lzy.stream.realtime.v1.utils.FlinkSinkUtil;
 import com.lzy.stream.realtime.v1.utils.FlinkSourceUtil;
 import com.lzy.stream.realtime.v1.utils.JdbcUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
@@ -35,6 +33,7 @@ public class DwdTimeSoure {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
 
+        //读取 Kafka 数据：使用 FlinkSourceUtil.getKafkaSource 读取 Kafka 中的订单消息；
         KafkaSource<String> kafkaSource = FlinkSourceUtil.getKafkaSource("dwd_order_info_join", "DwdTimeSoure");
         DataStreamSource<String> fromSource = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "kafkaSource");
 
@@ -42,6 +41,7 @@ public class DwdTimeSoure {
 
 //        fromSource.print();
 
+        //JSON 解析与时间戳提取：将字符串转为 JSONObject，并基于 ts_ms 字段设置事件时间；
         SingleOutputStreamOperator<JSONObject> streamOperator = fromSource.map(JSON::parseObject)
                 .assignTimestampsAndWatermarks(WatermarkStrategy
                         .<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(5))
@@ -54,6 +54,13 @@ public class DwdTimeSoure {
 
 //        operator.print();
 
+        //RichMapFunction 处理逻辑：
+        //open 方法：连接 MySQL，加载商品（Sku）和类目维度表到内存；
+        //map 方法：
+        //根据 search_item 补充商品信息（c3id, tname）；
+        //根据 c3id 补充类目一级名称（b1_name）；
+        //对不同维度（时间、金额、品牌、类目）进行评分；
+        //close 方法：关闭数据库连接；
         SingleOutputStreamOperator<JSONObject> operator1 = streamOperator.map(new RichMapFunction<JSONObject, JSONObject>() {
             private Connection connection;
             List<DimSkuInfoMsg> dimSkuInfoMsgs;
@@ -69,35 +76,34 @@ public class DwdTimeSoure {
                 connection = JdbcUtil.getMySQLConnection();
 
                 String sql1 = "  SELECT                                                        \n" +
-                        "   b3.id, b3.name3 b3name, b2.name2 b2name, b1.name1 b1name     \n" +
+                        "   b3.id, b3.name3 b3name, b2.name2 b2name, b1.name1 b1name           \n" +
                         "   FROM realtime_dmp.base_category3 as b3                             \n" +
                         "   JOIN realtime_dmp.base_category2 as b2                             \n" +
                         "   ON b3.category2_id = b2.id                                         \n" +
                         "   JOIN realtime_dmp.base_category1 as b1                             \n" +
-                        "   ON b2.category1_id = b1.id                                         ";
+                        "   ON b2.category1_id = b1.id                                           ";
                 dim_base_categories = JdbcUtil.queryList(connection, sql1, DimBaseCategory.class, false);
 
-                String querySkuSql = "  select sku_info.id AS id,                                     \n" +
+                String querySkuSql = "  select sku_info.id AS id,                                        \n" +
                     "                   spu_info.id AS spuid,                                            \n" +
                     "                   spu_info.category3_id AS c3id,                                   \n" +
                     "                   base_trademark.tm_name AS name                                   \n" +
-                    "                   from realtime_dmp.sku_info                                        \n" +
-                    "                   join realtime_dmp.spu_info                                        \n" +
+                    "                   from realtime_dmp.sku_info                                       \n" +
+                    "                   join realtime_dmp.spu_info                                       \n" +
                     "                   on sku_info.spu_id = spu_info.id                                 \n" +
-                    "                   join realtime_dmp.base_trademark                                  \n" +
-                    "                   on realtime_dmp.spu_info.tm_id = realtime_dmp.base_trademark.id   ";
+                    "                   join realtime_dmp.base_trademark                                 \n" +
+                    "                   on realtime_dmp.spu_info.tm_id = realtime_dmp.base_trademark.id    ";
 
                 dimSkuInfoMsgs = JdbcUtil.queryList(connection, querySkuSql, DimSkuInfoMsg.class);
 
                 for (DimSkuInfoMsg dimSkuInfoMsg : dimSkuInfoMsgs) {
                     System.err.println(dimSkuInfoMsg);
                 }
-
             }
 
             @Override
-            public JSONObject map(JSONObject jsonObject) throws Exception {
-                String skuId = jsonObject.getString("sku_id");
+            public JSONObject map(JSONObject jsonObject) {
+                String skuId = jsonObject.getString("search_item");
                 if (skuId != null && !skuId.isEmpty()){
                     for (DimSkuInfoMsg dimSkuInfoMsg : dimSkuInfoMsgs) {
                         if (dimSkuInfoMsg.getId().equals(skuId)){
@@ -310,7 +316,9 @@ public class DwdTimeSoure {
             }
         });
 
-        operator1.map(data -> data.toString()).sinkTo(FlinkSinkUtil.getKafkaSink("dwd_time_soure"));
+        operator1.print();
+
+//        operator1.map(data -> data.toString()).sinkTo(FlinkSinkUtil.getKafkaSink("dwd_time_soure"));
 
         env.execute("DwdTimeSoure");
     }

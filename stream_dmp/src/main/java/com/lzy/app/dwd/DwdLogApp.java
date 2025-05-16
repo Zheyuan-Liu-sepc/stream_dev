@@ -47,10 +47,12 @@ public class DwdLogApp {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
 
+        // 读取kafka数据topic_log数据
         KafkaSource<String> kafkaSourceLog = FlinkSourceUtil.getKafkaSource("topic_log", "dwd_app");
 
         SingleOutputStreamOperator<String> kafka_source_log = env.fromSource(kafkaSourceLog, WatermarkStrategy.noWatermarks(), "Kafka Source");
 
+        //解析 JSON 并设置时间戳与水印：将原始字符串解析为 JSONObject，并基于 ts 字段设置事件时间。
         SingleOutputStreamOperator<JSONObject> streamOperatorlog = kafka_source_log.map(JSON::parseObject)
                 .assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(5))
                         .withTimestampAssigner(new SerializableTimestampAssigner<JSONObject>() {
@@ -60,6 +62,11 @@ public class DwdLogApp {
                     }
                }));
 
+        //提取设备信息和搜索词：
+        //提取 uid 和 ts；
+        //提取 common 字段作为设备信息（去除部分字段）；
+        //若存在页面信息且为关键词类型，则提取搜索词；
+        //对 os 字段做清洗，只保留第一个值。
         SingleOutputStreamOperator<JSONObject> logDeviceInfoDs = streamOperatorlog.map(new MapFunction<JSONObject, JSONObject>() {
             @Override
             public JSONObject map(JSONObject jsonObject) {
@@ -90,10 +97,14 @@ public class DwdLogApp {
             }
         });
 
+        //过滤掉 uid 为空的数据
         SingleOutputStreamOperator<JSONObject> filterNotNullUidLogPageMsg = logDeviceInfoDs.filter(data -> !data.getString("uid").isEmpty());
 
         KeyedStream<JSONObject, String> keyedStreamLogPageMsg = filterNotNullUidLogPageMsg.keyBy(data -> data.getString("uid"));
 
+        //去重处理：
+        //使用 ValueState<HashSet<String>> 存储已处理的数据；
+        //如果是新数据则输出，否则跳过。
         SingleOutputStreamOperator<JSONObject> processStagePageLogDs = keyedStreamLogPageMsg.process(new KeyedProcessFunction<String, JSONObject, JSONObject>() {
 
             private Logger LOG = LoggerFactory.getLogger(String.class);
@@ -129,6 +140,9 @@ public class DwdLogApp {
         });
 //        logDeviceInfoDs.print();
 
+        //窗口统计 PV/UV：
+        //使用 MapState<String, Set<String>> 统计不同维度（如 os、ch、md、ba、search_item）的 UV；
+        //使用 ValueState<Long> 统计 PV；
         SingleOutputStreamOperator<JSONObject> win2MinutesPageLogsDs = processStagePageLogDs.keyBy(value -> value.getString("uid"))
                 .process(new KeyedProcessFunction<String, JSONObject, JSONObject>() {
 
@@ -196,6 +210,7 @@ public class DwdLogApp {
                     }
                 });
 
+        //每两分钟滚动窗口取最新状态：使用 reduce((v1, v2) -> v2) 获取每个用户最近一次的状态。
         SingleOutputStreamOperator<JSONObject> reduce = win2MinutesPageLogsDs.keyBy(data -> data.getString("uid"))
                 .window(TumblingProcessingTimeWindows.of(Time.minutes(2)))
                 .reduce((value1, value2) -> value2);
@@ -204,7 +219,7 @@ public class DwdLogApp {
 
         operator.print();
 
-        operator.sinkTo(FlinkSinkUtil.getKafkaSink("minutes_page_Log"));
+//        operator.sinkTo(FlinkSinkUtil.getKafkaSink("minutes_page_Log"));
 
         env.execute("DwdLogApp");
     }

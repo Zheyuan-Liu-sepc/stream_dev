@@ -16,6 +16,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class DimCategoryCompare {
     private Integer id;
-    private String categoryName;
-    private String searchCategory;
+    private String category_name;
+    private String search_category;
 }
