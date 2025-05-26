@@ -49,7 +49,6 @@ public class DwdMerge {
 
         DataStreamSource<String> DbDs = env.fromSource(DbBd, WatermarkStrategy.noWatermarks(), "Kafka Source");
 
-
         SingleOutputStreamOperator<JSONObject> mapBase4LabelDs = timeDs.map(JSON::parseObject)
                 .assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(5))
                         .withTimestampAssigner(new SerializableTimestampAssigner<JSONObject>() {

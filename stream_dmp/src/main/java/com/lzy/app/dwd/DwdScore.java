@@ -89,7 +89,6 @@ public class DwdScore {
                 super.open(parameters);
             }
 
-
             @Override
             public JSONObject map(JSONObject jsonObject) {
                 String os = jsonObject.getString("os");
